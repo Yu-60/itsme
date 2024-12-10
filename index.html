@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>It's me</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        body, #container {
+            margin: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+        }
+
+        body {
+            background-color: #f0f0f0;
+        }
+
+        .photo {
+            position: absolute;
+            width: min(100px, 15vw);
+            height: min(100px, 15vw);
+            cursor: pointer;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+
+        #photo1 {
+            opacity: 0.5;
+        }
+
+        .thought {
+            position: absolute;
+            padding: min(10px, 2vw);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            max-width: min(150px, 30vw);
+            font-size: min(14px, 3vw);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .positive-thought { background-color: white; color: black; }
+        .negative-thought { background-color: #333; color: white; }
+        .inevitable-thought { background-color: #4a4a4a; color: #ffd700; }
+        .special-thought {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            font-style: italic;
+            color: #666;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <script>
+        const CONFIG = {
+            photoCount: 6,
+            photoSize: 100,
+            transitionDuration: 300,
+            forceStrength: 0.1,
+            linkDistance: 0.15,
+            radialStrength: 0.2,
+            collisionStrength: 0.8
+        };
+
+        const THOUGHTS = {
+            positive: [
+                "What if I suddenly need a photo for a job application due tomorrow?",
+                "What if I need a photo for an embassy appointment but can't find a photo booth?",
+                "What if I suddenly need a photo for a memorial event?",
+                "What if I urgently need a passport photo for a visa application but the photo studio is closed?",
+                "What if I need a professional headshot but can't afford a photographer?",
+                "What if I need a photo for an official document?",
+                "What if I need this for my new company ID card?"
+            ],
+            negative: [
+                "What if I don't want to use this photo because it doesn't look like me anymore?",
+                "What if I hate how I look in this photo?",
+                "What if this photo makes me look too serious?",
+                "What if I want a more professional-looking photo?",
+                "What if I think this photo is outdated?",
+                "What if I don't like how my hair looks in this photo?",
+                "What if I prefer a photo with my current appearance?"
+            ],
+            inevitable: [
+                "What if my ID photo gets wet in the rain and becomes unrecognizable?",
+                "What if a stray cat steals my ID photo and hides it?",
+                "What if my photo gets stolen and used for a fake profile online?",
+                "What if my ID photo gets burned in an accidental fire?",
+                "What if my photo gets damaged in a natural disaster?",
+                "What if someone accidentally spills coffee on my photo?",
+                "What if my photo fades away over time?",
+                "What if my wallet gets stolen with all my ID photos in it?",
+                "What if my photos get lost during moving?"
+            ],
+            special: [
+                "Used for making a passport",
+                "Used for my student ID card",
+                "I took this 5 years ago",
+                "I didn't wear glasses",
+                "Taken at a photo studio",
+                "I've never managed to pass a facial recognition check at the airport with this",
+                "No smile allowed",
+                "Back then, my hair was longer",
+                "A lot of people don't recognize me when they see this photo",
+                "Must show both ears"
+            ]
+        };
+
+        const container = d3.select('#container');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let nodes = [];
+        let links = [];
+
+        const svg = container.append('svg')
+            .style('position', 'absolute')
+            .style('top', 0)
+            .style('left', 0)
+            .attr('width', width)
+            .attr('height', height);
+
+        function createPhotos() {
+            for (let i = 0; i < CONFIG.photoCount; i++) {
+                container.append('img')
+                    .attr('src', '/images/id_me.png')
+                    .attr('class', 'photo')
+                    .attr('id', `photo${i + 1}`)
+                    .style('left', `${Math.random() * (width - CONFIG.photoSize)}px`)
+                    .style('top', `${Math.random() * (height - CONFIG.photoSize)}px`);
+            }
+
+            nodes = d3.selectAll('.photo').nodes().map((d, i) => ({
+                id: i,
+                type: 'photo',
+                element: d,
+                x: Math.random() * width,
+                y: Math.random() * height
+            }));
+        }
+
+        function createSimulation() {
+            return d3.forceSimulation(nodes)
+                .alphaDecay(0.02)
+                .velocityDecay(0.35)
+                .force('charge', d3.forceManyBody().strength(() => -Math.min(width, height) * CONFIG.forceStrength))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(d => {
+                    const baseRadius = Math.min(width, height) * 0.1;
+                    return d.type === 'photo' ? baseRadius : baseRadius * 1.2;
+                }).strength(CONFIG.collisionStrength))
+                .force('link', d3.forceLink(links)
+                    .distance(() => Math.min(width, height) * CONFIG.linkDistance)
+                    .strength(0.5))
+                .force('radial', d3.forceRadial(
+                    Math.min(width, height) * 0.3,
+                    width / 2,
+                    height / 2
+                ).strength(CONFIG.radialStrength))
+                .on('tick', ticked);
+        }
+
+        function addThought(photoNode) {
+            const isSpecialPhoto = photoNode.element.id === 'photo1';
+            const thoughtCategory = isSpecialPhoto ? 'special' : 
+                                  Math.random() < 0.33 ? 'positive' :
+                                  Math.random() < 0.66 ? 'negative' : 'inevitable';
+            
+            const thoughtArray = THOUGHTS[thoughtCategory];
+            const thoughtText = thoughtArray[Math.floor(Math.random() * thoughtArray.length)];
+
+            const thought = {
+                id: nodes.length,
+                type: 'thought',
+                text: thoughtText,
+                x: photoNode.x,
+                y: photoNode.y,
+                category: thoughtCategory
+            };
+
+            const thoughtElement = container.append('div')
+                .attr('class', `thought ${thoughtCategory}-thought`)
+                .style('opacity', '0')
+                .text(thoughtText)
+                .node();
+
+            setTimeout(() => {
+                d3.select(thoughtElement).style('opacity', '1');
+            }, 10);
+
+            thought.element = thoughtElement;
+            nodes.push(thought);
+            links.push({ source: photoNode, target: thought, type: 'main' });
+
+            simulation.nodes(nodes);
+            simulation.force('link').links(links);
+            simulation.alphaTarget(0.2).restart();
+            setTimeout(() => simulation.alphaTarget(0), CONFIG.transitionDuration);
+        }
+
+        function ticked() {
+            nodes.forEach(node => {
+                const padding = Math.min(width, height) * (node.type === 'photo' ? 0.1 : 0.075);
+                node.x = Math.max(padding, Math.min(width - padding, node.x));
+                node.y = Math.max(padding, Math.min(height - padding, node.y));
+
+                const offset = node.type === 'photo' ? 
+                    Math.min(50, width * 0.075) : 
+                    Math.min(75, width * 0.1);
+
+                d3.select(node.element)
+                    .style('left', `${node.x - offset}px`)
+                    .style('top', `${node.y - (node.type === 'photo' ? offset : offset/2)}px`);
+            });
+
+            svg.selectAll('.link')
+                .data(links)
+                .join('line')
+                .attr('class', 'link')
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+        }
+
+        function handleResize() {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            
+            svg.attr('width', newWidth)
+               .attr('height', newHeight);
+            
+            nodes.forEach(node => {
+                node.x *= newWidth / width;
+                node.y *= newHeight / height;
+            });
+            
+            width = newWidth;
+            height = newHeight;
+            
+            simulation.force('charge').strength(() => -Math.min(width, height) * CONFIG.forceStrength);
+            simulation.force('center', d3.forceCenter(width / 2, height / 2));
+            simulation.force('radial')
+                .x(width / 2)
+                .y(height / 2)
+                .radius(Math.min(width, height) * 0.3);
+            
+            simulation.alpha(0.5).restart();
+        }
+
+        function setupEventListeners() {
+            d3.selectAll('.photo').on('click', function(event) {
+                const photoNode = nodes.find(n => n.element === this);
+                addThought(photoNode);
+            });
+
+            window.addEventListener('resize', handleResize);
+        }
+
+        createPhotos();
+        const simulation = createSimulation();
+        setupEventListeners();
+    </script>
+</body>
+</html>

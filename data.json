@@ -1,0 +1,77 @@
+{
+    "object": "ID_Photo_Set",
+    "metadata": {
+        "total_photos": 6,
+        "used_photo": 1,
+        "unused_photos": 5,
+        "creation_period": "5 years ago",
+        "primary_usage": "official identification"
+    },
+    "status": {
+        "current_condition": "no longer resemble the owner accurately",
+        "recognition_issues": {
+            "airport_security": "fails facial recognition checks",
+            "general_recognition": "people often fail to recognize the person",
+            "temporal_accuracy": "appearance has significantly changed"
+        }
+    },
+    "technical_requirements": {
+        "pose_restrictions": [
+            "no smile allowed",
+            "must show both ears"
+        ]
+    },
+    "overthinking": {
+        "positive_thoughts": {
+            "emergency_scenarios": [
+                "what if I suddenly need a photo for a job application due tomorrow",
+                "what if I need a photo for an embassy appointment but can't find a photo booth",
+                "what if I suddenly need a photo for a memorial event",
+                "what if I urgently need a passport photo for a visa application but the photo studio is closed",
+                "what if I need a professional headshot but can't afford a photographer"
+            ],
+            "practical_considerations": [
+                "what if I need this for my new company ID card",
+                "what if I need a photo for an official document"
+            ]
+        },
+        "negative_thoughts": {
+            "appearance_concerns": [
+                "what if I don't want to use this photo because it doesn't look like me anymore",
+                "what if I hate how I look in this photo",
+                "what if this photo makes me look too serious",
+                "what if I want a more professional-looking photo",
+                "what if I think this photo is outdated",
+                "what if I don't like how my hair looks in this photo"
+            ],
+            "professional_image": "prefer a photo with my current appearance"
+        },
+        "anxiety_factors": {
+            "physical_risks": [
+                "what if my ID photo gets wet in the rain and becomes unrecognizable",
+                "what if my photo gets burned in an accidental fire",
+                "what if my photo gets damaged in a natural disaster",
+                "what if someone accidentally spills coffee on my photo",
+                "what if my photo fades away over time"
+            ],
+            "security_concerns": [
+                "what if my wallet gets stolen with all my ID photos in it",
+                "what if my photos get lost during moving",
+                "what if my photo gets stolen and used for a fake profile online",
+                "what if a stray cat steals my ID photo and hides it"
+            ]
+        }
+    },
+    "current_state": {
+        "utility_assessment": "minimal practical value",
+        "retention_factors": {
+            "keeping_as_memento": false,
+            "practical_usage": false
+        },
+        "owner_satisfaction": {
+            "appearance_satisfaction": false,
+            "usability_satisfaction": false,
+            "replacement_motivation": "low due to procrastination"
+        }
+    }
+}
